@@ -42,7 +42,7 @@ mqttc.connect(url.hostname, url.port)
 mqttc.loop_start()
 
 prev_flueGas = 0
-prev_boierTemp = 0
+prev_boilerTemp = 0
 prev_bufferTop = 0
 prev_bufferMid = 0
 prev_hotWater = 0
@@ -68,11 +68,11 @@ while True:
         mqttc.publish(base_topic+"/flueGas", flueGas_json)
         prev_flueGas = flueGas
     
-    boierTemp=arduinoComm.values["boierTemp"]
-    if boierTemp != prev_boierTemp:
-        boierTemp_json=json.dumps({"boierTemp":boierTemp, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/boierTemp", boierTemp_json)
-        prev_boierTemp = boierTemp
+    boilerTemp=arduinoComm.values["boilerTemp"]
+    if boilerTemp != prev_boilerTemp:
+        boilerTemp_json=json.dumps({"boilerTemp":boilerTemp, "timestamp":time.time()})
+        mqttc.publish(base_topic+"/boilerTemp", boilerTemp_json)
+        prev_boilerTemp = boilerTemp
     
     bufferTop=arduinoComm.values["bufferTop"]
     if bufferTop != prev_bufferTop:

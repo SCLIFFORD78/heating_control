@@ -19,8 +19,8 @@ port2 = serial.Serial(
         bytesize=serial.EIGHTBITS,
         timeout=1
 )
-flueGas=boierTemp=bufferTop=bufferMid=hotWater=bufferBottom =0.00
-values={"flueGas":flueGas,"boierTemp":boierTemp,"bufferTop":bufferTop,"bufferMid":bufferMid,"hotWater":hotWater,"bufferBottom":bufferBottom}
+flueGas=boilerTemp=bufferTop=bufferMid=hotWater=bufferBottom =0.00
+values={"flueGas":flueGas,"boilerTemp":boilerTemp,"bufferTop":bufferTop,"bufferMid":bufferMid ,"hotWater":hotWater,"bufferBottom":bufferBottom}
 
 heartBeat=woodFan= woodCircPump= woodHeatCircPump= oilBoiler= hotWaterValve= switchOver= startButton=0
 states={"heartBeat":heartBeat,"woodFan":woodFan, "woodCircPump":woodCircPump, "woodHeatCircPump":woodHeatCircPump, "oilBoiler":oilBoiler, "hotWaterValve":hotWaterValve, "switchOver":switchOver, "startButton":startButton}
@@ -32,7 +32,7 @@ def feedBack(serial_data,values,states):
         for i in range(6,len(serial_data)):
             serial_data[i]=int(serial_data[i])
         values["flueGas"]= serial_data[0]
-        values["boierTemp"]= serial_data[1]
+        values["boilerTemp"]= serial_data[1]
         values["bufferTop"]= serial_data[2]
         values["bufferMid"]= serial_data[3]
         values["hotWater"]= serial_data[4]
