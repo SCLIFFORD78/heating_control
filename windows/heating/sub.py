@@ -7,6 +7,8 @@ import mysql.connector
 import json
 import time
 
+
+
 try:
     mydb = mysql.connector.connect(
         host="localhost",
@@ -16,6 +18,7 @@ try:
     )
 except mysql.connector.Error as err:
     print("Something went wrong: {}".format(err))
+
 
 # Define event callbacks
 def on_connect(client, userdata, flags, rc):
@@ -31,16 +34,14 @@ def on_message(client, obj, msg):
     column2 = list(m_in.keys())[1]
     value1 = list(m_in.values())[0]
     value2 = list(m_in.values())[1]
-    mycursor = mydb.cursor()
-    createTable = "CREATE TABLE IF NOT EXISTS %s(ID INT AUTO_INCREMENT NOT NULL PRIMARY KEY,%s INT,%s VARCHAR(255))"%(column1,column1,column2)
-    sql = "INSERT INTO %s (%s,%s) VALUES (%s,%s)" %(column1,column1,column2,value1,value2)
-    mycursor.execute(createTable)
-    mycursor.execute(sql)
-
-
-    mydb.commit()
-    print(mycursor.rowcount, "record inserted.")
-
+    if column1 != "heartBeat":
+        mycursor = mydb.cursor()
+        createTable = "CREATE TABLE IF NOT EXISTS %s(ID INT AUTO_INCREMENT NOT NULL PRIMARY KEY,%s INT,%s VARCHAR(255))"%(column1,column1,column2)
+        sql = "INSERT INTO %s (%s,%s) VALUES (%s,%s)" %(column1,column1,column2,value1,value2)
+        mycursor.execute(createTable)
+        mycursor.execute(sql)
+        mydb.commit()
+        print(mycursor.rowcount, "record inserted.")
 
 def on_subscribe(client, obj, mid, granted_qos):
     print("Subscribed,  QOS granted: "+ str(granted_qos))
@@ -65,13 +66,15 @@ print(url.hostname)
 print(url.port)
 mqttc.connect(url.hostname, url.port)
 
-# Start subscribe, with QoS level 0
+# Start subscribe, with QoS level 2
 mqttc.subscribe(base_topic+"/#", 2)
 mqttc.loop_forever()
 
 # Continue the network loop, exit when an error occurs
+heartBeat = 0
 rc = 0
 while rc == 0:
+
     rc = mqttc.loop()
 
 print("rc: " + str(rc))

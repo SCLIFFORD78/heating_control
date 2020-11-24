@@ -3,11 +3,12 @@
 import paho.mqtt.client as mqtt
 from urllib.parse import urlparse
 import sys
-import time
+from datetime import datetime
 import json
+import time
 from sense_hat import SenseHat
 # import presence_detector
-import arduinoComm
+
 
 sense = SenseHat()
 sense.clear()
@@ -56,101 +57,138 @@ prev_oilBoiler = 3
 prev_hotWaterValve = 3
 prev_switchOver = 3
 prev_startButton = 3
-    
+
+lastTime = time.time()
+noComms = "noComms"
+commsEstablished = "commsEstablished"
+lostConnection = 1
+
+
+try:
+    import arduinoComm
+    commsEstablished_json=json.dumps({"commsEstablished":1, "timestamp":time.time()})
+    mqttc.publish(base_topic+"/commsEstablished", commsEstablished_json)
+except:
+    commsEstablished_json=json.dumps({"commsEstablished":0, "timestamp":time.time()})
+    mqttc.publish(base_topic+"/commsEstablished", commsEstablished_json)
+    print("Problem with Arduino connection")
+
+   
 
 # Publish a message to temp every 15 seconds
 while True:
-    arduinoComm.getValueArduino()
-    
-    flueGas=arduinoComm.values["flueGas"]
-    if flueGas != prev_flueGas:
-        flueGas_json=json.dumps({"flueGas":flueGas, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/flueGas", flueGas_json)
-        prev_flueGas = flueGas
-    
-    boilerTemp=arduinoComm.values["boilerTemp"]
-    if boilerTemp != prev_boilerTemp:
-        boilerTemp_json=json.dumps({"boilerTemp":boilerTemp, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/boilerTemp", boilerTemp_json)
-        prev_boilerTemp = boilerTemp
-    
-    bufferTop=arduinoComm.values["bufferTop"]
-    if bufferTop != prev_bufferTop:
-        bufferTop_json=json.dumps({"bufferTop":bufferTop, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/bufferTop", bufferTop_json)
-        prev_bufferTop = bufferTop
-    
-    bufferMid=arduinoComm.values["bufferMid"]
-    if bufferMid != prev_bufferMid:
-        bufferMid_json=json.dumps({"bufferMid":bufferMid, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/bufferMid", bufferMid_json)
-        prev_bufferMid = bufferMid
-    
-    hotWater=arduinoComm.values["hotWater"]
-    if hotWater != prev_hotWater:
-        hotWater_json=json.dumps({"hotWater":hotWater, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/hotWater", hotWater_json)
-        prev_hotWater = hotWater
-    
-    bufferBottom=arduinoComm.values["bufferBottom"]
-    if bufferBottom != prev_bufferBottom:
-        bufferBottom_json=json.dumps({"bufferBottom":bufferBottom, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/bufferBottom", bufferBottom_json)
-        prev_bufferBottom = bufferBottom
+    try:
+        arduinoComm.getValueArduino()
+
+        heartBeat=arduinoComm.states["heartBeat"]
+        if heartBeat == prev_heartBeat:
+            print("Missed Heart Beat ")
+            print(time.time())
+            if time.time() > lastTime + 60 and lostConnection == 1:#60 second of no heartbeat
+                print("no comms")
+                heartBeatLoss_json=json.dumps({"heartBeatLoss":1, "timestamp":time.time()})
+                mqttc.publish(base_topic+"/heartBeatLoss", heartBeatLoss_json)
+                #lostConnection = 0
+                
+        if heartBeat != prev_heartBeat:
+            #heartBeat_json=json.dumps({"heartBeat":heartBeat, "timestamp":time.time()})
+            #mqttc.publish(base_topic+"/heartBeat", heartBeat_json)
+            prev_heartBeat = heartBeat
+            lastTime = time.time()
+            #lostConnection = 0
+
         
-    heartBeat=arduinoComm.states["heartBeat"]
-    if heartBeat != prev_heartBeat:
-        heartBeat_json=json.dumps({"heartBeat":heartBeat, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/heartBeat", heartBeat_json)
-        prev_heartBeat = heartBeat
+        flueGas=arduinoComm.values["flueGas"]
+        if flueGas != prev_flueGas:
+            flueGas_json=json.dumps({"flueGas":flueGas, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/flueGas", flueGas_json)
+            prev_flueGas = flueGas
         
-    woodCircPump=arduinoComm.states["woodCircPump"]
-    if woodCircPump != prev_woodCircPump:
-        woodCircPump_json=json.dumps({"woodCircPump":woodCircPump, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/woodCircPump", woodCircPump_json)
-        prev_woodCircPump = woodCircPump
+        boilerTemp=arduinoComm.values["boilerTemp"]
+        if boilerTemp != prev_boilerTemp:
+            boilerTemp_json=json.dumps({"boilerTemp":boilerTemp, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/boilerTemp", boilerTemp_json)
+            prev_boilerTemp = boilerTemp
         
-    woodHeatCircPump=arduinoComm.states["woodHeatCircPump"]
-    if woodHeatCircPump != prev_woodHeatCircPump:
-        woodHeatCircPump_json=json.dumps({"woodHeatCircPump":woodHeatCircPump, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/woodHeatCircPump", woodHeatCircPump_json)
-        prev_woodHeatCircPump = woodHeatCircPump
+        bufferTop=arduinoComm.values["bufferTop"]
+        if bufferTop != prev_bufferTop:
+            bufferTop_json=json.dumps({"bufferTop":bufferTop, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/bufferTop", bufferTop_json)
+            prev_bufferTop = bufferTop
         
-    woodFan=arduinoComm.states["woodFan"]
-    if woodFan != prev_woodFan:
-        woodFan_json=json.dumps({"woodFan":woodFan, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/woodFan", woodFan_json)
-        prev_woodFan = woodFan
+        bufferMid=arduinoComm.values["bufferMid"]
+        if bufferMid != prev_bufferMid:
+            bufferMid_json=json.dumps({"bufferMid":bufferMid, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/bufferMid", bufferMid_json)
+            prev_bufferMid = bufferMid
         
-    startButton=arduinoComm.states["startButton"]
-    if startButton != prev_startButton:
-        startButton_json=json.dumps({"startButton":startButton, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/startButton", startButton_json)
-        prev_startButton = startButton
+        hotWater=arduinoComm.values["hotWater"]
+        if hotWater != prev_hotWater:
+            hotWater_json=json.dumps({"hotWater":hotWater, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/hotWater", hotWater_json)
+            prev_hotWater = hotWater
         
-    oilBoiler=arduinoComm.states["oilBoiler"]
-    if oilBoiler != prev_oilBoiler:
-        oilBoiler_json=json.dumps({"oilBoiler":oilBoiler, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/oilBoiler", oilBoiler_json)
-        prev_oilBoiler = oilBoiler
-        
-    switchOver=arduinoComm.states["switchOver"]
-    if switchOver != prev_switchOver:
-        switchOver_json=json.dumps({"switchOver":switchOver, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/switchOver", switchOver_json)
-        prev_switchOver = switchOver
-        
-    hotWaterValve=arduinoComm.states["hotWaterValve"]
-    if hotWaterValve != prev_hotWaterValve:
-        hotWaterValve_json=json.dumps({"hotWaterValve":hotWaterValve, "timestamp":time.time()})
-        mqttc.publish(base_topic+"/hotWaterValve", hotWaterValve_json)
-        prev_hotWaterValve = hotWaterValve
-        
-#     temp=round(sense.get_temperature(),2)
-#     temp_json=json.dumps({"temperature":temp, "timestamp":time.time()})
-#     mqttc.publish(base_topic+"/temperature", temp_json)
-#     devices_found_json=json.dumps(presence_detector.find_devices())
-#     if 'name' in devices_found_json:
-#      mqttc.publish(base_topic+"/devices", devices_found_json)
-    time.sleep(1)
-    arduinoComm.states["heartBeat"]=0
+        bufferBottom=arduinoComm.values["bufferBottom"]
+        if bufferBottom != prev_bufferBottom:
+            bufferBottom_json=json.dumps({"bufferBottom":bufferBottom, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/bufferBottom", bufferBottom_json)
+            prev_bufferBottom = bufferBottom
+            
+           
+            
+        woodCircPump=arduinoComm.states["woodCircPump"]
+        if woodCircPump != prev_woodCircPump:
+            woodCircPump_json=json.dumps({"woodCircPump":woodCircPump, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/woodCircPump", woodCircPump_json)
+            prev_woodCircPump = woodCircPump
+            
+        woodHeatCircPump=arduinoComm.states["woodHeatCircPump"]
+        if woodHeatCircPump != prev_woodHeatCircPump:
+            woodHeatCircPump_json=json.dumps({"woodHeatCircPump":woodHeatCircPump, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/woodHeatCircPump", woodHeatCircPump_json)
+            prev_woodHeatCircPump = woodHeatCircPump
+            
+        woodFan=arduinoComm.states["woodFan"]
+        if woodFan != prev_woodFan:
+            woodFan_json=json.dumps({"woodFan":woodFan, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/woodFan", woodFan_json)
+            prev_woodFan = woodFan
+            
+        startButton=arduinoComm.states["startButton"]
+        if startButton != prev_startButton:
+            startButton_json=json.dumps({"startButton":startButton, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/startButton", startButton_json)
+            prev_startButton = startButton
+            
+        oilBoiler=arduinoComm.states["oilBoiler"]
+        if oilBoiler != prev_oilBoiler:
+            oilBoiler_json=json.dumps({"oilBoiler":oilBoiler, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/oilBoiler", oilBoiler_json)
+            prev_oilBoiler = oilBoiler
+            
+        switchOver=arduinoComm.states["switchOver"]
+        if switchOver != prev_switchOver:
+            switchOver_json=json.dumps({"switchOver":switchOver, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/switchOver", switchOver_json)
+            prev_switchOver = switchOver
+            
+        hotWaterValve=arduinoComm.states["hotWaterValve"]
+        if hotWaterValve != prev_hotWaterValve:
+            hotWaterValve_json=json.dumps({"hotWaterValve":hotWaterValve, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/hotWaterValve", hotWaterValve_json)
+            prev_hotWaterValve = hotWaterValve
+            
+    #     temp=round(sense.get_temperature(),2)
+    #     temp_json=json.dumps({"temperature":temp, "timestamp":time.time()})
+    #     mqttc.publish(base_topic+"/temperature", temp_json)
+    #     devices_found_json=json.dumps(presence_detector.find_devices())
+    #     if 'name' in devices_found_json:
+    #      mqttc.publish(base_topic+"/devices", devices_found_json)
+        time.sleep(1)
+        arduinoComm.states["heartBeat"]=0
+    except:
+        print("comms error")
+        if lostConnection == 1:
+            commsEstablished_json=json.dumps({"commsEstablished":0, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/commsEstablished", commsEstablished_json)
+            lostConnection = 0
