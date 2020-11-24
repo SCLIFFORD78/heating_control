@@ -98,37 +98,37 @@ while True:
             #lostConnection = 0
 
         
-        flueGas=arduinoComm.values["flueGas"]
+        flueGas=int(arduinoComm.values["flueGas"])
         if flueGas != prev_flueGas:
             flueGas_json=json.dumps({"flueGas":flueGas, "timestamp":time.time()})
             mqttc.publish(base_topic+"/flueGas", flueGas_json)
             prev_flueGas = flueGas
         
-        boilerTemp=arduinoComm.values["boilerTemp"]
+        boilerTemp=int(arduinoComm.values["boilerTemp"])
         if boilerTemp != prev_boilerTemp:
             boilerTemp_json=json.dumps({"boilerTemp":boilerTemp, "timestamp":time.time()})
             mqttc.publish(base_topic+"/boilerTemp", boilerTemp_json)
             prev_boilerTemp = boilerTemp
         
-        bufferTop=arduinoComm.values["bufferTop"]
+        bufferTop=int(arduinoComm.values["bufferTop"])
         if bufferTop != prev_bufferTop:
             bufferTop_json=json.dumps({"bufferTop":bufferTop, "timestamp":time.time()})
             mqttc.publish(base_topic+"/bufferTop", bufferTop_json)
             prev_bufferTop = bufferTop
         
-        bufferMid=arduinoComm.values["bufferMid"]
+        bufferMid=int(arduinoComm.values["bufferMid"])
         if bufferMid != prev_bufferMid:
             bufferMid_json=json.dumps({"bufferMid":bufferMid, "timestamp":time.time()})
             mqttc.publish(base_topic+"/bufferMid", bufferMid_json)
             prev_bufferMid = bufferMid
         
-        hotWater=arduinoComm.values["hotWater"]
+        hotWater=int(arduinoComm.values["hotWater"])
         if hotWater != prev_hotWater:
             hotWater_json=json.dumps({"hotWater":hotWater, "timestamp":time.time()})
             mqttc.publish(base_topic+"/hotWater", hotWater_json)
             prev_hotWater = hotWater
         
-        bufferBottom=arduinoComm.values["bufferBottom"]
+        bufferBottom=int(arduinoComm.values["bufferBottom"])
         if bufferBottom != prev_bufferBottom:
             bufferBottom_json=json.dumps({"bufferBottom":bufferBottom, "timestamp":time.time()})
             mqttc.publish(base_topic+"/bufferBottom", bufferBottom_json)
