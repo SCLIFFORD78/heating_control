@@ -7,12 +7,23 @@ from datetime import datetime
 import json
 import time
 from sense_hat import SenseHat
-
+from urllib.request import urlopen
 # import presence_detector
 
 
 sense = SenseHat()
 sense.clear()
+
+WRITE_API_KEY='COKOEUF7NMOXWNPE'
+
+baseURL='https://api.thingspeak.com/update?api_key=%s' % WRITE_API_KEY
+
+def writeData(value, field):
+    # Sending the data to thingspeak in the query string
+    conn = urlopen(baseURL + '&%s=%s' % (field,value))
+    print(conn.read())
+    # Closing the connection
+    conn.close()
 
 # Define event callbacks
 def on_connect(client, userdata, flags, rc):
@@ -59,10 +70,6 @@ prev_hotWaterValve = 3
 prev_switchOver = 3
 prev_startButton = 3
 
-states={"woodFan":0, "woodCircPump":0, "woodHeatCircPump":0, "oilBoiler":0, "hotWaterValve":0, "switchOver":0, "startButton":0}
-values={"flueGas":0,"boilerTemp":0,"bufferTop":0,"bufferMid":0 ,"hotWater":0,"bufferBottom":0}
-
-
 lastTime = time.time()
 noComms = "noComms"
 commsEstablished = "commsEstablished"
@@ -84,10 +91,6 @@ except:
 while True:
     try:
         arduinoComm.getValueArduino()
-        
-        with open('outstates.json','r') as json_file:
-            outstates = json.load(json_file)
-            print(outstates)
 
         heartBeat=arduinoComm.states["heartBeat"]
         if heartBeat == prev_heartBeat:
@@ -111,42 +114,42 @@ while True:
         if flueGas != prev_flueGas:
             flueGas_json=json.dumps({"flueGas":flueGas, "timestamp":time.time()})
             mqttc.publish(base_topic+"/flueGas", flueGas_json)
-            values['flueGas']=flueGas
+            writeData(flueGas,"field1")
             prev_flueGas = flueGas
         
         boilerTemp=int(arduinoComm.values["boilerTemp"])
         if boilerTemp != prev_boilerTemp:
             boilerTemp_json=json.dumps({"boilerTemp":boilerTemp, "timestamp":time.time()})
             mqttc.publish(base_topic+"/boilerTemp", boilerTemp_json)
-            values['boilerTemp']=boilerTemp
+            writeData(boilerTemp,"field2")
             prev_boilerTemp = boilerTemp
         
         bufferTop=int(arduinoComm.values["bufferTop"])
         if bufferTop != prev_bufferTop:
             bufferTop_json=json.dumps({"bufferTop":bufferTop, "timestamp":time.time()})
             mqttc.publish(base_topic+"/bufferTop", bufferTop_json)
-            values['bufferTop']=bufferTop
+            writeData(bufferTop,"field3")
             prev_bufferTop = bufferTop
         
         bufferMid=int(arduinoComm.values["bufferMid"])
         if bufferMid != prev_bufferMid:
             bufferMid_json=json.dumps({"bufferMid":bufferMid, "timestamp":time.time()})
             mqttc.publish(base_topic+"/bufferMid", bufferMid_json)
-            values['bufferMid']=bufferMid
+            writeData(bufferMid,"field4")
             prev_bufferMid = bufferMid
         
         hotWater=int(arduinoComm.values["hotWater"])
         if hotWater != prev_hotWater:
             hotWater_json=json.dumps({"hotWater":hotWater, "timestamp":time.time()})
             mqttc.publish(base_topic+"/hotWater", hotWater_json)
-            values['hotWater']=hotWater
+            writeData(hotWater,"field6")
             prev_hotWater = hotWater
         
         bufferBottom=int(arduinoComm.values["bufferBottom"])
         if bufferBottom != prev_bufferBottom:
             bufferBottom_json=json.dumps({"bufferBottom":bufferBottom, "timestamp":time.time()})
             mqttc.publish(base_topic+"/bufferBottom", bufferBottom_json)
-            values['bufferBottom']=bufferBottom
+            writeData(bufferBottom,"field5")
             prev_bufferBottom = bufferBottom
             
            
@@ -155,14 +158,12 @@ while True:
         if woodCircPump != prev_woodCircPump:
             woodCircPump_json=json.dumps({"woodCircPump":woodCircPump, "timestamp":time.time()})
             mqttc.publish(base_topic+"/woodCircPump", woodCircPump_json)
-            states['woodCircPump'] = woodCircPump
             prev_woodCircPump = woodCircPump
             
         woodHeatCircPump=arduinoComm.states["woodHeatCircPump"]
         if woodHeatCircPump != prev_woodHeatCircPump:
             woodHeatCircPump_json=json.dumps({"woodHeatCircPump":woodHeatCircPump, "timestamp":time.time()})
             mqttc.publish(base_topic+"/woodHeatCircPump", woodHeatCircPump_json)
-            states['woodHeatCircPump'] = woodHeatCircPump
             prev_woodHeatCircPump = woodHeatCircPump
             
         woodFan=arduinoComm.states["woodFan"]
@@ -175,21 +176,18 @@ while True:
         if startButton != prev_startButton:
             startButton_json=json.dumps({"startButton":startButton, "timestamp":time.time()})
             mqttc.publish(base_topic+"/startButton", startButton_json)
-            states['startButton'] = startButton
             prev_startButton = startButton
             
         oilBoiler=arduinoComm.states["oilBoiler"]
         if oilBoiler != prev_oilBoiler:
             oilBoiler_json=json.dumps({"oilBoiler":oilBoiler, "timestamp":time.time()})
             mqttc.publish(base_topic+"/oilBoiler", oilBoiler_json)
-            states['oilBoiler'] = oilBoiler
             prev_oilBoiler = oilBoiler
             
         switchOver=arduinoComm.states["switchOver"]
         if switchOver != prev_switchOver:
             switchOver_json=json.dumps({"switchOver":switchOver, "timestamp":time.time()})
             mqttc.publish(base_topic+"/switchOver", switchOver_json)
-            states['switchOver'] = switchOver
             prev_switchOver = switchOver
             
         hotWaterValve=arduinoComm.states["hotWaterValve"]
@@ -204,14 +202,8 @@ while True:
     #     devices_found_json=json.dumps(presence_detector.find_devices())
     #     if 'name' in devices_found_json:
     #      mqttc.publish(base_topic+"/devices", devices_found_json)
-        with open ('instates.json', 'w') as instate:#in states from Arduino
-            json.dump(states,instate)
-        with open ('values.json', 'w') as invalues:#read values from arduino
-            json.dump(values,invalues)
         time.sleep(1)
         arduinoComm.states["heartBeat"]=0
-
-        
     except:
         print("comms error")
         if lostConnection == 1:

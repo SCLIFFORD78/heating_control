@@ -48,11 +48,17 @@ float bufferTop;
 float bufferMid;
 float hotWater;
 float bufferBottom;
+float bufferAvg;
 bool initialiaseGas;
 bool initialiaseBoiler;
 String valueX = "";
 String value7 = "";
 String value8 = "";
+int inSwitchOver = 0;
+int inStartButton = 0;
+int start = 0;
+String a = "";
+String b = "";
 
 
 
@@ -102,12 +108,22 @@ void loop(void) {
   float bufferBottom1 = sensors.getTempCByIndex(3);          //buffer tank bottom temp
   if (bufferBottom1 > 10 && bufferBottom1 < 100) bufferBottom = bufferBottom1;
 
+  bufferAvg = (bufferTop + bufferMid + bufferBottom)/3;       //Average Temperature of Buffer Tank
+
   if (Serial.available() > 0)
     valueX = Serial.readString();
+  
   value7 = "";
   value8 = "";
+  
+  
   for (i = 0; i < 3; i++) value7 = value7 + valueX[i];
-  for (i = 3; i < valueX.length(); i++)value8 = value8 + valueX[i];
+  for (i = 3; i < 6; i++)value8 = value8 + valueX[i];
+  if (valueX.length()>6)
+    a = String(valueX[6]);
+    b = String(valueX[7]);
+    inSwitchOver = a.toInt();
+    inStartButton = b.toInt();
   //int value6 = valueX%10;
   //int value5 = (valueX/10)%10;
   //int value4 = (valueX/100)%10;
@@ -175,35 +191,43 @@ void loop(void) {
     lightSet = false;
     j = 0;
   }
+  
   // ***************************************************************switch over for supply to boiler from heating - ON for oil***********************************************
-  if (bufferTop < 40) {
+  if (bufferTop < 40 || inSwitchOver == 0) {
     digitalWrite(switchOver, LOW);
   }
-  else if (bufferTop > 55 && digitalRead(switchOver) == LOW) {
+  else if ((bufferTop > 55 && digitalRead(switchOver) == LOW) ||  inSwitchOver == 1) {
     digitalWrite(switchOver, HIGH);
   }
 
   //*************************************************************************boiler on programe*******************************************************************************
+  // 60 min delay for boiler to get up to temperature
   if (i > 3600)startDelay = true;
   if (i <= 3600) startDelay = false;
 
 
 
-  if (digitalRead(startButton) == HIGH) {
-    boilerON = true;
+  if ((digitalRead(startButton) == HIGH || inStartButton == 1) && start == 0) {
+    start = 1;
   }
-  if (digitalRead(startButton) == LOW) {
+  if (((digitalRead(startButton) == LOW && inStartButton == 0) && start == 1) && boilerON == false) {
+    boilerON = true;
+    start = 0;
+  }
+  if (((digitalRead(startButton) == LOW && inStartButton == 0) && start ==1)  && boilerON == true) {
     boilerON = false;
-    if (digitalRead(woodFan) == LOW) digitalWrite(woodFan, HIGH);
+    if (digitalRead(woodFan) == LOW) digitalWrite(woodFan, HIGH);   //turns off gasification fan
+    start = 0;
     i = 0;
   }
 
   if ( boilerON == true) {
     i++;
-
-    if ((startDelay == false || flueGas > 100) && boilerTemp < 90 && flueGas < 200) { //sub in boiler temp,i=1800(for 60 mins)
+    //parameters for fan on rear of gasification boiler
+    if ((startDelay == false || flueGas > 100) && boilerTemp < 90 && flueGas < 200) { 
       digitalWrite(woodFan, LOW);
     }
+    //turns off fan after time delay of 60 mins if flue gas temp not up to 100, fire has failed to light!!
     else if ((startDelay == true && flueGas < 100 && digitalRead(woodFan) == LOW)) {
       digitalWrite(woodFan, HIGH);
     }
@@ -213,25 +237,27 @@ void loop(void) {
   }
   // *********************************************************************gasification boiler circulating pump internal*******************************************************
   if (boilerTemp >  72) {
-    digitalWrite(woodCircPump, LOW);
+    digitalWrite(woodCircPump, LOW);    //switched ON lambda circulatong pump
   }
   if (boilerTemp < 70) {
-    digitalWrite(woodCircPump, HIGH);
+    digitalWrite(woodCircPump, HIGH);   //switched OFF lambda circulatong pump
   }
   //**********************************************************************actuator valve for hot water tank********************************************************************
+  //If using buffer
   if (digitalRead(switchOver) == HIGH) {
-    if (digitalRead(switchOver) == HIGH && hotWater < 70 && ( ((hotWater < (bufferTop - 8) && hotWater < 60) || hotWater < 40) || bufferTop > 88)) {
-      digitalWrite(hotWaterValve, LOW);
+    if (hotWater < 70 && ( ((hotWater < (bufferTop - 8) && hotWater < 60) || hotWater < 40) || bufferTop > 88)) {
+      digitalWrite(hotWaterValve, LOW);//switches on ht water heating  to small tank
     }
     else {
       digitalWrite(hotWaterValve, HIGH);
     }
   }
+  //If on oil
   if (digitalRead(switchOver) == LOW) {
-    if (digitalRead(switchOver) == LOW && hotWater < 44) {
+    if (hotWater < 44) {
       digitalWrite(hotWaterValve, LOW);
     }
-    else if (digitalRead(hotWaterValve == LOW) && hotWater > 46 ) {
+    else if (digitalRead(hotWaterValve == LOW) && hotWater > 55 ) {
       digitalWrite(hotWaterValve, HIGH);
     }
   }

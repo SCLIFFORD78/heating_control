@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 import serial
+import json
 
 port1 = serial.Serial(
         port='/dev/ttyUSB0', #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
@@ -58,15 +59,22 @@ def getValueArduino():
                 time.sleep(1)
                 temp=""
                 try:
+                    #reading thermocouplier values
                     temp=str(port1.readline(),'ascii')
-    #                 print(temp)
+                    print("values from thermo to be sent to main arduino ",temp)
                 except UnicodeDecodeError:
                     print("")
                 time.sleep(1)
             else:
                 print("error1")
             if port2.isOpen():
-                port2.write(temp.encode())
+                with open('outstates.json','r') as json_file:
+                    outstates = json.load(json_file)
+                    print(outstates)
+                if states['startButton'] != outstates['startButton'] or states['switchOver'] != outstates['switchOver']:
+                    temp = temp[ : 6] + str(outstates['switchOver'])+str(outstates['startButton'])
+                    print("values from thermo to be sent to main arduino with outstates",temp)
+                port2.write(temp.encode())#write thermocouplier values to to main arduino
                 time.sleep(1)
                 temp2=port2.readline()
                 temp3=[]

@@ -50,7 +50,6 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, obj, msg):
     global delayThingSpeakTime
-    print(delayThingSpeakTime)
     # Prepare Data, separate columns and values
     m_decode = str(msg.payload.decode("utf-8", "ignore"))
     print("message received", m_decode)
@@ -73,18 +72,20 @@ def on_message(client, obj, msg):
             if column1 == i:  # checks if subscribed value is in the array of possible values
                 if len(storedData) > 0:
                     for j in range(len(storedData)):
-                        print(storedData[j][1])
                         if fieldValues[i] == storedData[j][1]:  # checks if there is a value in the buffer already
-
                             storedData[j][0] = value1  # replaces the value in buffer with most recent
                             break
                         if j == len(storedData) - 1 and column1 != storedData[j][1]:
                             store = [value1, fieldValues[i]]
                             storedData.append(store)
+                            with open ('userdata.json', 'w') as outfile:
+                                json.dump(m_in,outfile)
                             break
                 else:
                     store = [value1, fieldValues[i]]
                     storedData.append(store)
+                    with open ('userdata.json', 'w') as outfile:
+                        json.dump(m_in,outfile)
                     break
         if len(storedData) > 0:
             print("DataStorage buffer =  ", len(storedData))
