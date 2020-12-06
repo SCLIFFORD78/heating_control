@@ -26,7 +26,7 @@ delayThingSpeakTime = time.time()
 
 def writeData(value, field):
     # sending data to thigspeak in the query string
-    conn = urlopen(baseURL + '&%s=%s' % (field, value), timeout=35)
+    conn = urlopen(baseURL + '&%s=%s' % (field, value))
     print(conn.read(), "Field: ", field, " Value: ", value)
     # closing the connection
     conn.close()
@@ -78,14 +78,20 @@ def on_message(client, obj, msg):
                         if j == len(storedData) - 1 and column1 != storedData[j][1]:
                             store = [value1, fieldValues[i]]
                             storedData.append(store)
+                            with open ('userdata.json', 'r') as outfile:
+                                data = json.load(outfile)
+                                data[str(column1)] = value1
                             with open ('userdata.json', 'w') as outfile:
-                                json.dump(m_in,outfile)
+                                json.dump(data, outfile)
                             break
                 else:
                     store = [value1, fieldValues[i]]
                     storedData.append(store)
+                    with open ('userdata.json', 'r') as outfile:
+                        data = json.load(outfile)
+                        data[str(column1)] = value1
                     with open ('userdata.json', 'w') as outfile:
-                        json.dump(m_in,outfile)
+                        json.dump(data, outfile)
                     break
         if len(storedData) > 0:
             print("DataStorage buffer =  ", len(storedData))
@@ -106,6 +112,7 @@ mqttc = mqtt.Client()
 mqttc.on_message = on_message
 mqttc.on_connect = on_connect
 mqttc.on_subscribe = on_subscribe
+
 
 # parse mqtt url for connection details
 # url_str = sys.argv[1]

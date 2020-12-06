@@ -193,11 +193,11 @@ void loop(void) {
   }
   
   // ***************************************************************switch over for supply to boiler from heating - ON for oil***********************************************
-  if (bufferTop < 40 || inSwitchOver == 0) {
-    digitalWrite(switchOver, LOW);
+  if (bufferTop < 40 && inSwitchOver == 0) {
+    digitalWrite(switchOver, LOW);    //switches to oil
   }
-  else if ((bufferTop > 55 && digitalRead(switchOver) == LOW) ||  inSwitchOver == 1) {
-    digitalWrite(switchOver, HIGH);
+  else if ((bufferTop > 55 && digitalRead(switchOver) == LOW && inSwitchOver == 0) ||  inSwitchOver == 1) {
+    digitalWrite(switchOver, HIGH);   //switches to buffer
   }
 
   //*************************************************************************boiler on programe*******************************************************************************

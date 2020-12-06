@@ -4,18 +4,75 @@
         <script type="text/javascript">
             google.charts.load('current', {'packages':['gauge']});
             google.charts.setOnLoadCallback(drawChart);
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChartGraph);
+
+            dataChart = [];
+            function readTextFile(file)
+            {
+                var rawFile = new XMLHttpRequest();
+                rawFile.open("GET", file, false);
+                rawFile.onreadystatechange = function ()
+                {
+                    if(rawFile.readyState === 4)
+                    {
+                        if(rawFile.status === 200 || rawFile.status === 0)
+                        {
+                            var allText = rawFile.responseText;
+                            var obj = JSON.parse(allText);
+                            console.log(obj);
+                            //dataChart =  obj;
+                        }
+                    }
+                }
+                rawFile.send(null);
+            }
+            //test = {};
+            test2 = [];
+            var oXHR = new XMLHttpRequest();
+            oXHR.onreadystatechange = reportStatus;
+            oXHR.open("GET", './userdata.json', true);  // get json file.
+            oXHR.send();
+
+            function reportStatus() {
+                if (oXHR.readyState == 4) {		// Check if request is complete.
+                    //document.getElementById('showData').innerHTML = this.responseText;
+                    test = this.responseText;
+                }
+            }
+
+            var oXHR1 = new XMLHttpRequest();
+            oXHR1.onreadystatechange = reportStatus1;
+            oXHR1.open("GET", './buffertop.txt', true);  // get json file.
+            oXHR1.send();
+
+            function reportStatus1() {
+                if (oXHR1.readyState == 4) {		// Check if request is complete.
+                    //document.getElementById('showData').innerHTML = this.responseText;
+                    dataChart = this.responseText;
+
+                }
+            }
 
             function drawChart() {
 
+                oXHR.onreadystatechange = reportStatus;
+                oXHR.open("GET", './userdata.json', true);  // get json file.
+                oXHR.send();
+                var obj = JSON.parse(test);
+
                 var data = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['Memory', 80],
-                    ['CPU', 55],
-                    ['Network', 68]
+                    ['flueGas', 0],
+                    ['boilerTemp', 0],
+                    ['bufferTop', 0],
+                    ['bufferMid', 0],
+                    ['bufferBottom', 0],
+                    ['hotWater', 0]
                 ]);
 
                 var options = {
-                    width: 400, height: 120,
+                    width: 800, height: 240,
                     redFrom: 90, redTo: 100,
                     yellowFrom:75, yellowTo: 90,
                     minorTicks: 5
@@ -26,21 +83,76 @@
                 chart.draw(data, options);
 
                 setInterval(function() {
-                    data.setValue(0, 1, 40 + Math.round(60 * Math.random()));
+                    data.setValue(0, 1, obj.flueGas );
                     chart.draw(data, options);
-                }, 13000);
+                }, 1000);
                 setInterval(function() {
-                    data.setValue(1, 1, 40 + Math.round(60 * Math.random()));
+                    data.setValue(1, 1, obj.boilerTemp);
+                    chart.draw(data, options);
+                }, 2000);
+                setInterval(function() {
+                    data.setValue(2, 1, obj.bufferTop);
+                    chart.draw(data, options);
+                }, 3000);
+                setInterval(function() {
+                    data.setValue(3, 1, obj.bufferMid);
+                    chart.draw(data, options);
+                }, 4000);
+                setInterval(function() {
+                    data.setValue(4, 1, obj.bufferBottom);
                     chart.draw(data, options);
                 }, 5000);
                 setInterval(function() {
-                    data.setValue(2, 1, 60 + Math.round(20 * Math.random()));
+                    data.setValue(5, 1, obj.hotWater);
                     chart.draw(data, options);
-                }, 26000);
+                }, 6000);
+                setInterval(function(){
+                    oXHR.open("GET", './userdata.json', true);
+                    oXHR.send();
+                    obj = JSON.parse(test);
+
+                }, 7000);
+                setInterval(function() {
+                    test2.push([new Date().toString(), obj.bufferMid]);
+                    console.log(test2[test2.length-1]);
+                }, 5000);
+
+            }
+
+            function drawChartGraph() {
+                oXHR1.onreadystatechange = reportStatus1;
+                oXHR1.open("GET", './buffertop.txt', true);  // get json file.
+                oXHR1.send();
+                var obj = JSON.parse(dataChart);
+
+
+                var data = google.visualization.arrayToDataTable(obj);
+                var options = {
+                    title: 'Average Buffer Tank Temperature',
+                    curveType: 'function',
+                    legend: { position: 'bottom' },
+                    animation: {"duration": 5000},
+                    animation: {"startup": true}
+
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+                chart.draw(data, options);
+
+                setInterval(function() {
+                    oXHR1.open("GET", './buffertop.txt', true);  // get json file.
+                    oXHR1.send();
+                    obj = JSON.parse(dataChart);
+                    data = google.visualization.arrayToDataTable(obj);
+                    chart.draw(data, options);
+                }, 60000);
             }
         </script>
     </head>
     <body>
-    <div id="chart_div" style="width: 400px; height: 120px;"></div>
+    <div id='showData'></div>
+    <div id="chart_div" style="width: 400px; height: 160px;"></div>
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
     </body>
 </html>

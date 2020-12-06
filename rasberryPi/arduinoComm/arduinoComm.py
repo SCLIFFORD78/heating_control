@@ -71,9 +71,9 @@ def getValueArduino():
                 with open('outstates.json','r') as json_file:
                     outstates = json.load(json_file)
                     print(outstates)
-                if states['startButton'] != outstates['startButton'] or states['switchOver'] != outstates['switchOver']:
-                    temp = temp[ : 6] + str(outstates['switchOver'])+str(outstates['startButton'])
-                    print("values from thermo to be sent to main arduino with outstates",temp)
+                
+                temp = temp[ : 6] + str(outstates['switchOver'])+str(outstates['startButton'])
+                print("values from thermo to be sent to main arduino with outstates",temp)
                 port2.write(temp.encode())#write thermocouplier values to to main arduino
                 time.sleep(1)
                 temp2=port2.readline()

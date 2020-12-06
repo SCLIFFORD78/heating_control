@@ -60,6 +60,7 @@ prev_bufferTop = 0
 prev_bufferMid = 0
 prev_hotWater = 0
 prev_bufferBottom = 0
+prev_bufferAverage = 0
 
 prev_heartBeat = 3
 prev_woodFan = 3
@@ -151,6 +152,12 @@ while True:
             mqttc.publish(base_topic+"/bufferBottom", bufferBottom_json)
             writeData(bufferBottom,"field5")
             prev_bufferBottom = bufferBottom
+
+        bufferAverage=int((bufferTop + bufferMid + bufferBottom)/3)
+        if bufferAverage != prev_bufferAverage:
+            bufferAverage_json=json.dumps({"bufferAverage":bufferAverage, "timestamp":time.time()})
+            mqttc.publish(base_topic+"/bufferAverage", bufferAverage_json)
+            prev_bufferAverage = bufferAverage
             
            
             
