@@ -33,22 +33,25 @@ def writeData(value, field):
 
 
 def sqlSave(valueName, valueReading, time_stamp):
-    with open('userdata1.json', 'r') as outfile:
-        data = json.load(outfile)
-        data['timestamp'] = time_stamp
-        for x in data:
-            if x == valueName and data[x] != valueReading and x != 'timestamp':
-                data[x] = valueReading
-                mycursor = mydb.cursor()
-                sql = "INSERT INTO test (flueGas,boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater,woodFan,woodCircPump,woodHeatCircPump,oilBoiler,hotWaterValve,switchOver,startButton,commsEstablished,`timeStamp`)" \
-                              "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" %(data['flueGas'],data['boilerTemp'],data['bufferTop'],data['bufferMid'],data['bufferBottom'],data['hotWater'],data['woodFan'],
-                                                                                                  data['woodCircPump'],data['woodHeatCircPump'],data['oilBoiler'],data['hotWaterValve'],data['switchOver'],data['startButton'],
-                                                                                                  data['commsEstablished'],data['timestamp'])
-                mycursor.execute(sql)
-                mydb.commit()
-                print(mycursor.rowcount, "record inserted.")
-    with open('userdata1.json', 'w') as outfile:
-        json.dump(data, outfile)
+    try:
+        with open('userdata1.json', 'r') as outfile:
+            data = json.load(outfile)
+            data['timestamp'] = time_stamp
+            for x in data:
+                if x == valueName and data[x] != valueReading and x != 'timestamp':
+                    data[x] = valueReading
+                    mycursor = mydb.cursor()
+                    sql = "INSERT INTO test (flueGas,boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater,woodFan,woodCircPump,woodHeatCircPump,oilBoiler,hotWaterValve,switchOver,startButton,commsEstablished,`timeStamp`)" \
+                                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" %(data['flueGas'],data['boilerTemp'],data['bufferTop'],data['bufferMid'],data['bufferBottom'],data['hotWater'],data['woodFan'],
+                                                                                                      data['woodCircPump'],data['woodHeatCircPump'],data['oilBoiler'],data['hotWaterValve'],data['switchOver'],data['startButton'],
+                                                                                                      data['commsEstablished'],data['timestamp'])
+                    mycursor.execute(sql)
+                    mydb.commit()
+                    print(mycursor.rowcount, "record inserted.",time.ctime())
+        with open('userdata1.json', 'w') as outfile:
+            json.dump(data, outfile)
+    except:
+        print("File Error on opening", time.ctime())
 
 
 try:

@@ -8,26 +8,7 @@
             google.charts.setOnLoadCallback(drawChartGraph);
 
             dataChart = [];
-            function readTextFile(file)
-            {
-                var rawFile = new XMLHttpRequest();
-                rawFile.open("GET", file, false);
-                rawFile.onreadystatechange = function ()
-                {
-                    if(rawFile.readyState === 4)
-                    {
-                        if(rawFile.status === 200 || rawFile.status === 0)
-                        {
-                            var allText = rawFile.responseText;
-                            var obj = JSON.parse(allText);
-                            console.log(obj);
-                            //dataChart =  obj;
-                        }
-                    }
-                }
-                rawFile.send(null);
-            }
-            //test = {};
+
             test2 = [];
             var oXHR = new XMLHttpRequest();
             oXHR.onreadystatechange = reportStatus;
@@ -57,18 +38,18 @@
             function drawChart() {
 
                 oXHR.onreadystatechange = reportStatus;
-                oXHR.open("GET", './userdata.json', true);  // get json file.
+                oXHR.open("GET", './userdata1.json', true);  // get json file.
                 oXHR.send();
                 var obj = JSON.parse(test);
 
                 var data = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['flueGas', 0],
-                    ['boilerTemp', 0],
-                    ['bufferTop', 0],
-                    ['bufferMid', 0],
-                    ['bufferBottom', 0],
-                    ['hotWater', 0]
+                    ['flueGas', obj.flueGas],
+                    ['boilerTemp', obj.boilerTemp],
+                    ['bufferTop', obj.bufferTop],
+                    ['bufferMid', obj.bufferMid],
+                    ['bufferBottom', obj.bufferBottom],
+                    ['hotWater', obj.hotWater]
                 ]);
 
                 var options = {
@@ -128,7 +109,7 @@
 
                 var data = google.visualization.arrayToDataTable(obj);
                 var options = {
-                    title: 'Average Buffer Tank Temperature',
+                    title: 'Tank Temperatures',
                     curveType: 'function',
                     legend: { position: 'bottom' },
                     animation: {"duration": 5000},
@@ -153,6 +134,6 @@
     <body>
     <div id='showData'></div>
     <div id="chart_div" style="width: 2000px; height: 160px;"></div>
-    <div id="curve_chart" style="width: 1500px; height: 500px"></div>
+    <div id="curve_chart" style="width: 1600px; height: 800px"></div>
     </body>
 </html>
