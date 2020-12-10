@@ -107,7 +107,7 @@
                     chart.draw(data, options);
                 }, 6000);
                 setInterval(function(){
-                    oXHR.open("GET", './userdata.json', true);
+                    oXHR.open("GET", './userdata1.json', true);
                     oXHR.send();
                     obj = JSON.parse(test);
 
@@ -152,7 +152,7 @@
     </head>
     <body>
     <div id='showData'></div>
-    <div id="chart_div" style="width: 400px; height: 160px;"></div>
-    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+    <div id="chart_div" style="width: 2000px; height: 160px;"></div>
+    <div id="curve_chart" style="width: 1500px; height: 500px"></div>
     </body>
 </html>

@@ -1,15 +1,17 @@
 -- -----------------------------------------------------
--- Drop the 'mqtt' database/schema
+-- Drop the 'heating' database/schema
 -- -----------------------------------------------------
 
-DROP SCHEMA IF EXISTS mqtt;
+DROP SCHEMA IF EXISTS heating;
+
 -- -----------------------------------------------------
 -- Create 'inventory' database/schema and use this database
 -- -----------------------------------------------------
 
-CREATE SCHEMA IF NOT EXISTS mqtt;
+CREATE SCHEMA IF NOT EXISTS heating;
 
-USE mqtt;
+USE heating;
+
 
 -- -----------------------------------------------------
 -- Drop tables
@@ -21,111 +23,39 @@ USE mqtt;
 -- Create table data_values
 -- -----------------------------------------------------
 
-CREATE TABLE flueGas
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    flueGas     FLOAT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE boilerTemp
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    boilerTemp  FLOAT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE bufferTop
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    bufferTop   FLOAT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE bufferMid
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    bufferMid   FLOAT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE hotWater
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    hotWater    FLOAT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE bufferBottom
-(
-	ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+CREATE TABLE if not EXISTS test (
+    ID INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    flueGas FLOAT,
+    boilerTemp FLOAT,
+    bufferTop FLOAT,
+    bufferMid FLOAT,
     bufferBottom FLOAT,
-    `timeStamp`  VARCHAR(255)
-);
-
-CREATE TABLE heartBeat
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    heartBeat   INT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE woodFan
-(
-	ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    woodFan     INT,
-    `timeStamp` VARCHAR(255)
-);
-
-
-CREATE TABLE woodCircPump
-(
-    ID           INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    hotWater FLOAT,
+    woodFan INT,
     woodCircPump INT,
-    `timeStamp`  VARCHAR(255)
-);
-
-CREATE TABLE woodHeatCircPump
-(
-    ID               INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     woodHeatCircPump INT,
-    `timeStamp`      VARCHAR(255)
-);
-
-CREATE TABLE oilBoiler
-(
-	ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    oilBoiler   INT,
-    `timeStamp` VARCHAR(255)
-);
-
-CREATE TABLE hotWaterValve
-(
-    ID            INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    oilBoiler INT,
     hotWaterValve INT,
-    `timeStamp`   VARCHAR(255)
-);
-
-CREATE TABLE switchOver
-(
-	ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    switchOver  INT,
-    `timeStamp` VARCHAR(255)
-);
-
-
-
-CREATE TABLE startButton
-(
-    ID          INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    switchOver INT,
     startButton INT,
+    commsEstablished INT,
     `timeStamp` VARCHAR(255)
 );
+DROP TABLE test;
+
+
+INSERT INTO test (flueGas,boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater,woodFan,woodCircPump,woodHeatCircPump,oilBoiler,
+hotWaterValve,switchOver,startButton,`timeStamp`)
+	VALUES (1,2,3,4,5,6,7,8,9,10,11,12,13,14);
+
+SELECT  boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater, from_unixtime(timestamp, '%d %m %Y %H:%i:%s') FROM test ORDER BY id DESC LIMIT 1;
+
+SELECT * FROM test;
 
 SELECT
  from_unixtime(timestamp, '%D %m %Y %H:%i:%s') AS Time
 FROM 
-mqtt.startbutton;
+heating.startbutton;
 
 -- --------------------------------------------
 
