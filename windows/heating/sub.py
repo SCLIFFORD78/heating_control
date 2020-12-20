@@ -42,12 +42,15 @@ def sqlSave(valueName, valueReading, time_stamp):
                     data[x] = valueReading
                     mycursor = mydb.cursor()
                     sql = "INSERT INTO test (flueGas,boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater,woodFan,woodCircPump,woodHeatCircPump,oilBoiler,hotWaterValve,switchOver,startButton,commsEstablished,`timeStamp`)" \
-                                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" %(data['flueGas'],data['boilerTemp'],data['bufferTop'],data['bufferMid'],data['bufferBottom'],data['hotWater'],data['woodFan'],
-                                                                                                      data['woodCircPump'],data['woodHeatCircPump'],data['oilBoiler'],data['hotWaterValve'],data['switchOver'],data['startButton'],
-                                                                                                      data['commsEstablished'],data['timestamp'])
+                          "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" % (
+                              data['flueGas'], data['boilerTemp'], data['bufferTop'], data['bufferMid'],
+                              data['bufferBottom'], data['hotWater'], data['woodFan'],
+                              data['woodCircPump'], data['woodHeatCircPump'], data['oilBoiler'], data['hotWaterValve'],
+                              data['switchOver'], data['startButton'],
+                              data['commsEstablished'], data['timestamp'])
                     mycursor.execute(sql)
                     mydb.commit()
-                    print(mycursor.rowcount, "record inserted.",time.ctime())
+                    print(mycursor.rowcount, "record inserted.", time.ctime())
         with open('userdata1.json', 'w') as outfile:
             json.dump(data, outfile)
     except:
@@ -110,34 +113,41 @@ def on_subscribe(client, obj, mid, granted_qos):
     print("Subscribed,  QOS granted: " + str(granted_qos))
 
 
-mqttc = mqtt.Client()
+timeNow = time.time()
 
-# Assign event callbacks
-mqttc.on_message = on_message
-mqttc.on_connect = on_connect
-mqttc.on_subscribe = on_subscribe
+while (timeNow + 60) > time.time():
+    mqttc = mqtt.Client()
 
-# parse mqtt url for connection details
-# url_str = sys.argv[1]
-url_str = "mqtt://broker.hivemq.com:1883/Heating/home"
-url = urlparse(url_str)
-base_topic = url.path[1:]
+    # Assign event callbacks
+    mqttc.on_message = on_message
+    mqttc.on_connect = on_connect
+    mqttc.on_subscribe = on_subscribe
 
-# Connect
-if (url.username):
-    mqttc.username_pw_set(url.username, url.password)
-print(url.hostname)
-print(url.port)
-mqttc.connect(url.hostname, url.port)
+    # parse mqtt url for connection details
+    # url_str = sys.argv[1]
+    url_str = "mqtt://broker.hivemq.com:1883/Heating/home"
+    url = urlparse(url_str)
+    base_topic = url.path[1:]
 
-# Start subscribe, with QoS level 2
-mqttc.subscribe(base_topic + "/#", 2)
-mqttc.loop_forever()
+    # Connect
+    if (url.username):
+        mqttc.username_pw_set(url.username, url.password)
+    print(url.hostname)
+    print(url.port)
+    mqttc.connect(url.hostname, url.port,43200)
 
-# Continue the network loop, exit when an error occurs
-heartBeat = 0
-rc = 0
-while rc == 0:
-    rc = mqttc.loop()
+    # Start subscribe, with QoS level 2
+    mqttc.subscribe(base_topic + "/#", 2)
+    mqttc.loop_forever(retry_first_connection=True)
 
-print("rc: " + str(rc))
+    # Continue the network loop, exit when an error occurs
+    heartBeat = 0
+    rc = 0
+
+    while rc == 0:
+        rc = mqttc.loop_read()
+        # rc = mqttc.loop()
+
+timeNow = time.time()
+print(time.ctime(), "reset time")
+print("rc: " + str(rc) + "No Data is being logged")

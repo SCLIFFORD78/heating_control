@@ -61,7 +61,7 @@ def getValueArduino():
                 try:
                     #reading thermocouplier values
                     temp=str(port1.readline(),'ascii')
-                    print("values from thermo to be sent to main arduino ",temp)
+                    #print("values from thermo to be sent to main arduino ",temp)
                 except UnicodeDecodeError:
                     print("")
                 time.sleep(1)
@@ -70,10 +70,10 @@ def getValueArduino():
             if port2.isOpen():
                 with open('outstates.json','r') as json_file:
                     outstates = json.load(json_file)
-                    print(outstates)
+                    #print(outstates)
                 
                 temp = temp[ : 6] + str(outstates['switchOver'])+str(outstates['startButton'])
-                print("values from thermo to be sent to main arduino with outstates",temp)
+                #print("values from thermo to be sent to main arduino with outstates",temp)
                 port2.write(temp.encode())#write thermocouplier values to to main arduino
                 time.sleep(1)
                 temp2=port2.readline()

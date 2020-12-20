@@ -1,6 +1,8 @@
 <html>
     <head>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+    <body>
         <script type="text/javascript">
             google.charts.load('current', {'packages':['gauge']});
             google.charts.setOnLoadCallback(drawChart);
@@ -12,7 +14,7 @@
             test2 = [];
             var oXHR = new XMLHttpRequest();
             oXHR.onreadystatechange = reportStatus;
-            oXHR.open("GET", './userdata.json', true);  // get json file.
+            oXHR.open("GET", './userdata1.json', true);  // get json file.
             oXHR.send();
 
             function reportStatus() {
@@ -28,7 +30,7 @@
             oXHR1.send();
 
             function reportStatus1() {
-                if (oXHR1.readyState == 4) {		// Check if request is complete.
+                if (oXHR1.readyState === 4) {		// Check if request is complete.
                     //document.getElementById('showData').innerHTML = this.responseText;
                     dataChart = this.responseText;
 
@@ -41,6 +43,7 @@
                 oXHR.open("GET", './userdata1.json', true);  // get json file.
                 oXHR.send();
                 var obj = JSON.parse(test);
+
 
                 var data = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
@@ -130,10 +133,9 @@
                 }, 60000);
             }
         </script>
-    </head>
-    <body>
+
     <div id='showData'></div>
     <div id="chart_div" style="width: 2000px; height: 160px;"></div>
-    <div id="curve_chart" style="width: 1600px; height: 800px"></div>
+    <div id="curve_chart" style="width: 1200px; height: 600px"></div>
     </body>
 </html>

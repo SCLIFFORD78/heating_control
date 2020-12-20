@@ -34,8 +34,10 @@ with open('values.json','r') as json_file:
 # register handler for virtual pin V2(temperature) reading
 @blynk.handle_event('read V0')
 def read_virtual_pin_handler(pin):
-    temp=int((int(values['bufferTop'])+int(values['bufferMid'])+int(values['bufferBottom']))/3)
-    print('Buffer Average: ' + str(temp))  # print temp to console
+    with open('values.json','r') as json_file:
+        values = json.load(json_file)
+    temp=values['bufferTop']
+    print('Buffer Top: ' + str(temp))  # print temp to console
     blynk.virtual_write(pin, temp)
     
 @blynk.handle_event('read V1')

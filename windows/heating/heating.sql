@@ -10,7 +10,10 @@ DROP SCHEMA IF EXISTS heating;
 
 CREATE SCHEMA IF NOT EXISTS heating;
 
+
 USE heating;
+
+
 
 
 -- -----------------------------------------------------
@@ -48,9 +51,13 @@ INSERT INTO test (flueGas,boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater,w
 hotWaterValve,switchOver,startButton,`timeStamp`)
 	VALUES (1,2,3,4,5,6,7,8,9,10,11,12,13,14);
 
-SELECT  boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater, from_unixtime(timestamp, '%d %m %Y %H:%i:%s') FROM test ORDER BY id DESC LIMIT 1;
+SELECT  boilerTemp,bufferTop,bufferMid,bufferBottom,hotWater, from_unixtime(timestamp, '%d %m %Y %H:%i:%s') FROM test ORDER BY id DESC LIMIT 20;
 
 SELECT * FROM test;
+SELECT from_unixtime(timestamp, '%d %m %Y %H:%i:%s'),flueGas, boilerTemp, bufferTop, bufferMid, bufferBottom, hotWater FROM test ORDER BY ID DESC LIMIT 1;
+
+USE heating;
+SELECT from_unixtime(timestamp, '%d %m %Y %H:%i:%s'),flueGas, boilerTemp, bufferTop, bufferMid, bufferBottom, hotWater FROM test WHERE ID = 430;
 
 SELECT
  from_unixtime(timestamp, '%D %m %Y %H:%i:%s') AS Time
@@ -58,7 +65,18 @@ FROM
 heating.startbutton;
 
 -- --------------------------------------------
-
-
+CREATE OR REPLACE VIEW last_25 AS
+    SELECT 
+        FROM_UNIXTIME(timestamp, '%d %m %Y %H:%i:%s'),
+        flueGas,
+        boilerTemp,
+        bufferTop,
+        bufferMid,
+        bufferBottom,
+        hotWater
+    FROM
+        test
+    ORDER BY ID DESC
+    LIMIT 20;
 
 
