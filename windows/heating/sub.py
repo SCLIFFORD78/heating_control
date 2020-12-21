@@ -134,7 +134,7 @@ while (timeNow + 60) > time.time():
         mqttc.username_pw_set(url.username, url.password)
     print(url.hostname)
     print(url.port)
-    mqttc.connect(url.hostname, url.port,43200)
+    mqttc.connect(url.hostname, url.port,30)
 
     # Start subscribe, with QoS level 2
     mqttc.subscribe(base_topic + "/#", 2)
@@ -145,8 +145,8 @@ while (timeNow + 60) > time.time():
     rc = 0
 
     while rc == 0:
-        rc = mqttc.loop_read()
-        # rc = mqttc.loop()
+
+        rc = mqttc.loop()
 
 timeNow = time.time()
 print(time.ctime(), "reset time")

@@ -57,12 +57,56 @@ SELECT * FROM test;
 SELECT from_unixtime(timestamp, '%d %m %Y %H:%i:%s'),flueGas, boilerTemp, bufferTop, bufferMid, bufferBottom, hotWater FROM test ORDER BY ID DESC LIMIT 1;
 
 USE heating;
-SELECT from_unixtime(timestamp, '%d %m %Y %H:%i:%s'),flueGas, boilerTemp, bufferTop, bufferMid, bufferBottom, hotWater FROM test WHERE ID = 430;
+SELECT from_unixtime(timestamp, '%d %m %Y %H:%i:%s'),flueGas, boilerTemp, bufferTop, bufferMid, bufferBottom, hotWater FROM test WHERE ID = 2680;
 
 SELECT
  from_unixtime(timestamp, '%D %m %Y %H:%i:%s') AS Time
 FROM 
 heating.startbutton;
+
+SELECT from_unixtime(timestamp, '%D %m %Y %H:%i:%s') AS Time from heating.test WHERE woodFan = 0;
+
+SELECT avg(bufferTop) from test where `timestamp` between ((SELECT `timestamp` FROM test ORDER BY id DESC LIMIT 1)-300)  and (SELECT `timestamp` FROM test ORDER BY id DESC LIMIT 1);
+
+DROP procedure IF EXISTS heating.repeat_loop_example;
+
+DROP TABLE IF EXISTS results;
+delimiter //
+
+CREATE procedure heating.repeat_loop_example()
+wholeblock:BEGIN
+  DECLARE x INT;
+  DECLARE averages FLOAT;
+  SET x = 0;
+DROP TABLE IF EXISTS results;
+CREATE TABLE IF NOT EXISTS results (
+    ID INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    buffertop FLOAT,
+    timestamp_ VARCHAR(255)
+);
+
+  REPEAT
+  INSERT INTO results (bufferTop, timestamp_)
+  VALUES(
+	(SELECT avg(bufferTop) from test where `timestamp` between ((SELECT `timestamp` FROM test ORDER BY id DESC LIMIT 1)-(x+300))  and ((SELECT `timestamp` FROM test ORDER BY id DESC LIMIT 1)-x)),
+	(SELECT `timestamp` FROM test ORDER BY id DESC LIMIT 1)-x 
+    );
+
+    SET x = x + 300;
+    UNTIL x >= 6000
+  END REPEAT;
+
+
+END//
+
+USE heating;
+
+call repeat_loop_example();
+
+SELECT bufferTop,from_unixtime(timestamp_, '%d %m %Y %H:%i:%s') AS time_ from results order by time_;
+
+
+
 
 -- --------------------------------------------
 CREATE OR REPLACE VIEW last_25 AS
