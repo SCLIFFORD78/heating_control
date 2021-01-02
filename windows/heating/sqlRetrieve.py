@@ -3,23 +3,13 @@ import mysql.connector
 import json
 import time
 
-timePrevious = time.time() - 60
 
-
-def data():
+def data(mydb):
     try:
-        mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="Ranger01?",
-            database="heating"
-        )
 
         mycursor = mydb.cursor()
 
         mycursor.execute(
-            # "SELECT from_unixtime(timestamp, '%d %m %Y %H:%i:%s'),flueGas, boilerTemp, bufferTop, bufferMid,
-            # bufferBottom, hotWater FROM test ORDER BY ID DESC LIMIT 1;"
             "SELECT * FROM last_25 ;"
         )
 
@@ -39,9 +29,3 @@ def data():
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
 
-
-while True:
-    if time.time() > timePrevious + 60:
-        print(time.ctime())
-        data()
-        timePrevious = time.time()

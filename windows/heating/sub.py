@@ -8,6 +8,7 @@ import json
 import time
 from urllib.request import urlopen
 import numpy
+import sqlRetrieve
 
 WRITE_API_KEY = 'COKOEUF7NMOXWNPE'
 
@@ -22,6 +23,13 @@ fieldValues = {'flueGas': 'field1',
                }
 storedData = []
 delayThingSpeakTime = time.time()
+timeNow = time.time()
+
+# parse mqtt url for connection details
+# url_str = sys.argv[1]
+url_str = "mqtt://broker.hivemq.com:1883/Heating/home"
+url = urlparse(url_str)
+base_topic = url.path[1:]
 
 
 def writeData(value, field):
@@ -53,6 +61,8 @@ def sqlSave(valueName, valueReading, time_stamp):
                     print(mycursor.rowcount, "record inserted.", time.ctime())
         with open('userdata1.json', 'w') as outfile:
             json.dump(data, outfile)
+
+        sqlRetrieve.data(mydb)
     except:
         print("File Error on opening", time.ctime())
 
@@ -71,6 +81,12 @@ except mysql.connector.Error as err:
 # Define event callbacks
 def on_connect(client, userdata, flags, rc):
     print("Connection Result: " + str(rc))
+    global timeNow
+    if timeNow + 120 < time.time():
+        mqttc.reconnect()
+        mqttc.subscribe(base_topic + "/#", 2)
+        print("Attemt re connect and sub ", time.ctime())
+        timeNow = time.time()
 
 
 def on_message(client, obj, msg):
@@ -113,41 +129,37 @@ def on_subscribe(client, obj, mid, granted_qos):
     print("Subscribed,  QOS granted: " + str(granted_qos))
 
 
-timeNow = time.time()
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print("Unexpected disconnection." + str(client) + "  ", time.ctime())
 
-while (timeNow + 60) > time.time():
-    mqttc = mqtt.Client()
 
-    # Assign event callbacks
-    mqttc.on_message = on_message
-    mqttc.on_connect = on_connect
-    mqttc.on_subscribe = on_subscribe
+mqttc = mqtt.Client()
 
-    # parse mqtt url for connection details
-    # url_str = sys.argv[1]
-    url_str = "mqtt://broker.hivemq.com:1883/Heating/home"
-    url = urlparse(url_str)
-    base_topic = url.path[1:]
+# Assign event callbacks
+mqttc.on_message = on_message
+mqttc.on_connect = on_connect
+mqttc.on_subscribe = on_subscribe
+mqttc.on_disconnect = on_disconnect
 
-    # Connect
-    if (url.username):
-        mqttc.username_pw_set(url.username, url.password)
-    print(url.hostname)
-    print(url.port)
-    mqttc.connect(url.hostname, url.port,30)
+mqttc.enable_logger()
 
-    # Start subscribe, with QoS level 2
-    mqttc.subscribe(base_topic + "/#", 2)
-    mqttc.loop_forever(retry_first_connection=True)
+# Connect
+if (url.username):
+    mqttc.username_pw_set(url.username, url.password)
+print(url.hostname)
+print(url.port)
+mqttc.connect(url.hostname, url.port, 30)
 
-    # Continue the network loop, exit when an error occurs
-    heartBeat = 0
-    rc = 0
+# Start subscribe, with QoS level 2
+mqttc.subscribe(base_topic + "/#", 2)
+mqttc.loop_forever()
 
-    while rc == 0:
+# Continue the network loop, exit when an error occurs
+heartBeat = 0
+rc = 0
 
-        rc = mqttc.loop()
+while rc == 0:
+    rc = mqttc.loop()
 
-timeNow = time.time()
-print(time.ctime(), "reset time")
 print("rc: " + str(rc) + "No Data is being logged")
