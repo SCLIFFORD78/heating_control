@@ -1,7 +1,6 @@
-import sys
-import mysql.connector
 import json
-import time
+
+import mysql.connector
 
 
 def data(mydb):
@@ -23,6 +22,7 @@ def data(mydb):
         data.insert(0, header)
         print(data)
 
+        # writes a json file for gauge.html to read data from
         with open('buffertop.txt', 'w') as outfile:
             json.dump(data, outfile)
 

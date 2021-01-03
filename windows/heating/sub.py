@@ -1,19 +1,20 @@
 #!/usr/bin/python3
 
-import paho.mqtt.client as mqtt
-from urllib.parse import urlparse
-import sys
-import mysql.connector
 import json
 import time
+from urllib.parse import urlparse
 from urllib.request import urlopen
-import numpy
+
+import mysql.connector
+import paho.mqtt.client as mqtt
+
 import sqlRetrieve
 
 WRITE_API_KEY = 'COKOEUF7NMOXWNPE'
 
 baseURL = 'https://api.thingspeak.com/update?api_key=%s' % WRITE_API_KEY
 
+# for export to thinkspeak
 fieldValues = {'flueGas': 'field1',
                'boilerTemp': 'field2',
                'bufferTop': 'field3',
@@ -22,7 +23,7 @@ fieldValues = {'flueGas': 'field1',
                'hotWater': 'field6'
                }
 storedData = []
-delayThingSpeakTime = time.time()
+delayThingSpeakTime = time.time()  # timer to allow 30 seconds between data sent to thingspeak
 timeNow = time.time()
 
 # parse mqtt url for connection details
@@ -79,7 +80,7 @@ except mysql.connector.Error as err:
 
 
 # Define event callbacks
-def on_connect(client, userdata, flags, rc):
+def on_connect(rc):
     print("Connection Result: " + str(rc))
     global timeNow
     if timeNow + 120 < time.time():
@@ -89,18 +90,17 @@ def on_connect(client, userdata, flags, rc):
         timeNow = time.time()
 
 
-def on_message(client, obj, msg):
+def on_message(msg):
     global delayThingSpeakTime
     # Prepare Data, separate columns and values
     m_decode = str(msg.payload.decode("utf-8", "ignore"))
     print("message received", m_decode)
     m_in = json.loads(m_decode)
-    # columns = ', '.join(m_in.keys())+""
     column1 = list(m_in.keys())[0]  # value name e.g. bufferTop
-    column2 = list(m_in.keys())[1]  # timestamp
     value1 = list(m_in.values())[0]  # value name: reading
     value2 = list(m_in.values())[1]  # actual timestamp
-    sqlSave(column1, value1, value2)
+    sqlSave(column1, value1, value2)    # saves data to sql
+    # creates an array to act as a buffer for data to send to thingspeak as free version needs a delay
     for i in fieldValues:
         if column1 == i:  # checks if subscribed value is in the array of possible values
             if len(storedData) > 0:
@@ -125,11 +125,11 @@ def on_message(client, obj, msg):
     print(storedData)
 
 
-def on_subscribe(client, obj, mid, granted_qos):
+def on_subscribe(granted_qos):
     print("Subscribed,  QOS granted: " + str(granted_qos))
 
 
-def on_disconnect(client, userdata, rc):
+def on_disconnect(client, rc):
     if rc != 0:
         print("Unexpected disconnection." + str(client) + "  ", time.ctime())
 
@@ -145,7 +145,7 @@ mqttc.on_disconnect = on_disconnect
 mqttc.enable_logger()
 
 # Connect
-if (url.username):
+if url.username:
     mqttc.username_pw_set(url.username, url.password)
 print(url.hostname)
 print(url.port)
