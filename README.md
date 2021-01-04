@@ -51,3 +51,4 @@ THINGSPEAK:
 you tube combined overview video http://www.youtube.com/watch?v=F-mWeRQDeKE
 individual explaination videos also added
 
+sql dump file located in SQL folder

@@ -95,6 +95,7 @@ while True:
                 print("no comms")
                 heartBeatLoss_json=json.dumps({"heartBeatLoss":1, "timestamp":time.time()})
                 mqttc.publish(base_topic+"/heartBeatLoss", heartBeatLoss_json,2)
+                lastTime = time.time()
                 
         if heartBeat != prev_heartBeat:
             prev_heartBeat = heartBeat
