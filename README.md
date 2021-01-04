@@ -23,3 +23,7 @@ During the implementation of my project I propose to use the following:
 8. http protocol for commands
 9. MySQL to store data
 10. Python and C++ coding for Raspberry Pi and Arduinos
+
+
+See Presentation.pptx for an overview of the system setup and overview of system operation
+
