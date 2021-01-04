@@ -9,11 +9,10 @@ import time
 from sense_hat import SenseHat
 
 
-# import presence_detector
-
-
 sense = SenseHat()
 sense.clear()
+blue = (0, 0, 255)
+red = (255,0,0)
 
 # Define event callbacks
 def on_connect(client, userdata, flags, rc):
@@ -33,7 +32,6 @@ mqttc.on_publish = on_publish
 url_str = "mqtt://broker.hivemq.com:1883/Heating/home"
 print(url_str)
 url = urlparse(url_str)
-
 
 base_topic = url.path[1:]
 
@@ -69,8 +67,9 @@ lastTime = time.time()
 noComms = "noComms"
 commsEstablished = "commsEstablished"
 lostConnection = 1
+average = []
 
-
+#if arduinoComm imports succsefully then comms established by all devices if not of if a device not online the error message is given
 try:
     import arduinoComm
     commsEstablished_json=json.dumps({"commsEstablished":1, "timestamp":time.time()})
@@ -82,15 +81,12 @@ except:
 
    
 
-# Publish a message to temp every 15 seconds
+# Publish 
 while True:
     try:
-        arduinoComm.getValueArduino()
-        
-        with open('outstates.json','r') as json_file:
-            outstates = json.load(json_file)
-            print(outstates)
+        arduinoComm.getValueArduino()   # getts states and values from Arduino    
 
+        #if arduinos and Pi have not communicated successfully for more than 60 seconds and heartbeat value hasnt changed then flag is raised
         heartBeat=arduinoComm.states["heartBeat"]
         if heartBeat == prev_heartBeat:
             print("Missed Heart Beat ")
@@ -99,18 +95,20 @@ while True:
                 print("no comms")
                 heartBeatLoss_json=json.dumps({"heartBeatLoss":1, "timestamp":time.time()})
                 mqttc.publish(base_topic+"/heartBeatLoss", heartBeatLoss_json,2)
-                #lostConnection = 0
                 
         if heartBeat != prev_heartBeat:
-            #heartBeat_json=json.dumps({"heartBeat":heartBeat, "timestamp":time.time()})
-            #mqttc.publish(base_topic+"/heartBeat", heartBeat_json)
             prev_heartBeat = heartBeat
             lastTime = time.time()
-            #lostConnection = 0
 
         
         flueGas=int(arduinoComm.values["flueGas"])
-        print("testing fluegass temp ",flueGas)
+        if flueGas >=120:
+            sense.show_message("Fine!", text_colour = red)
+        else:
+            sense.show_message("COLD!", text_colour = blue)
+        
+        with open('outstates.json','r') as json_file:
+            outstates = json.load(json_file)
         if flueGas != prev_flueGas:
             if flueGas > 0:
                 flueGas_json=json.dumps({"flueGas":flueGas, "timestamp":time.time()})
@@ -118,9 +116,21 @@ while True:
             values['flueGas']=flueGas
             prev_flueGas = flueGas
         
+
         boilerTemp=int(arduinoComm.values["boilerTemp"])
-        print("testing boilerTemp temp ",boilerTemp)
-        if (boilerTemp > prev_boilerTemp+2) or (boilerTemp < prev_boilerTemp-2):
+        #temp of thermocouple fluctuated alot, this code averages the value over 10 readings
+        if len(average) < 11:
+            average.append(boilerTemp)
+        else:
+            average.pop(0)
+            average.append(boilerTemp)
+        avg = 0
+        for i in average:
+            avg = avg + i
+        avg = avg / len(average)
+        boilerTemp = round(avg)
+        #to further reduce fluctuation a change of 5 degrees is needed 
+        if (boilerTemp > prev_boilerTemp+5) or (boilerTemp < prev_boilerTemp-5):
             if boilerTemp >0:
                 boilerTemp_json=json.dumps({"boilerTemp":boilerTemp, "timestamp":time.time()})
                 mqttc.publish(base_topic+"/boilerTemp", boilerTemp_json,2)
@@ -215,18 +225,13 @@ while True:
             mqttc.publish(base_topic+"/hotWaterValve", hotWaterValve_json,2)
             prev_hotWaterValve = hotWaterValve
             
-    #     temp=round(sense.get_temperature(),2)
-    #     temp_json=json.dumps({"temperature":temp, "timestamp":time.time()})
-    #     mqttc.publish(base_topic+"/temperature", temp_json)
-    #     devices_found_json=json.dumps(presence_detector.find_devices())
-    #     if 'name' in devices_found_json:
-    #      mqttc.publish(base_topic+"/devices", devices_found_json)
+
         with open ('instates.json', 'w') as instate:#in states from Arduino
             json.dump(states,instate)
         with open ('values.json', 'w') as invalues:#read values from arduino
             json.dump(values,invalues)
         time.sleep(1)
-        arduinoComm.states["heartBeat"]=0
+        arduinoComm.states["heartBeat"]=0 
 
         
     except:

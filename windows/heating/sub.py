@@ -80,17 +80,17 @@ except mysql.connector.Error as err:
 
 
 # Define event callbacks
-def on_connect(rc):
+def on_connect(client, userdata, flags, rc):
     print("Connection Result: " + str(rc))
     global timeNow
     if timeNow + 120 < time.time():
         mqttc.reconnect()
         mqttc.subscribe(base_topic + "/#", 2)
-        print("Attemt re connect and sub ", time.ctime())
+        print("Attempt re connect and sub ", time.ctime())
         timeNow = time.time()
 
 
-def on_message(msg):
+def on_message(client, obj, msg):
     global delayThingSpeakTime
     # Prepare Data, separate columns and values
     m_decode = str(msg.payload.decode("utf-8", "ignore"))
@@ -125,11 +125,11 @@ def on_message(msg):
     print(storedData)
 
 
-def on_subscribe(granted_qos):
+def on_subscribe(client, obj, mid, granted_qos):
     print("Subscribed,  QOS granted: " + str(granted_qos))
 
 
-def on_disconnect(client, rc):
+def on_disconnect(client, userdata, rc):
     if rc != 0:
         print("Unexpected disconnection." + str(client) + "  ", time.ctime())
 

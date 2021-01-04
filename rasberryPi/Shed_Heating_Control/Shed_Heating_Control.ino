@@ -108,14 +108,6 @@ void loop(void) {
   value8 = "";
   for (i = 0; i < 3; i++) value7 = value7 + valueX[i];
   for (i = 3; i < valueX.length(); i++)value8 = value8 + valueX[i];
-  //int value6 = valueX%10;
-  //int value5 = (valueX/10)%10;
-  //int value4 = (valueX/100)%10;
-  //int value3 = (valueX/1000)%10;
-  //int value2 = (valueX/10000)%10;
-  //int value1 = (valueX/100000)%10;
-  //String value7 = (String)((String)value4 + (String)value5 + (String)value6);
-  //String value8 = (String)((String)value1 + (String)value2 + (String)value3);
 
   long value9 = value7.toInt();
   long boilerTemp1 = value9 - 100;

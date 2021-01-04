@@ -101,14 +101,12 @@ while True:
                 print("no comms")
                 heartBeatLoss_json=json.dumps({"heartBeatLoss":1, "timestamp":time.time()})
                 mqttc.publish(base_topic+"/heartBeatLoss", heartBeatLoss_json)
-                #lostConnection = 0
+                lastTime = time.time()
+
                 
         if heartBeat != prev_heartBeat:
-            #heartBeat_json=json.dumps({"heartBeat":heartBeat, "timestamp":time.time()})
-            #mqttc.publish(base_topic+"/heartBeat", heartBeat_json)
             prev_heartBeat = heartBeat
             lastTime = time.time()
-            #lostConnection = 0
 
         
         flueGas=int(arduinoComm.values["flueGas"])
@@ -203,12 +201,6 @@ while True:
             mqttc.publish(base_topic+"/hotWaterValve", hotWaterValve_json)
             prev_hotWaterValve = hotWaterValve
             
-    #     temp=round(sense.get_temperature(),2)
-    #     temp_json=json.dumps({"temperature":temp, "timestamp":time.time()})
-    #     mqttc.publish(base_topic+"/temperature", temp_json)
-    #     devices_found_json=json.dumps(presence_detector.find_devices())
-    #     if 'name' in devices_found_json:
-    #      mqttc.publish(base_topic+"/devices", devices_found_json)
         time.sleep(1)
         arduinoComm.states["heartBeat"]=0
     except:
