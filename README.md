@@ -10,15 +10,16 @@ Aside from being able to control the system over a network my primary focus is t
 1. Data being edge driven
 2. Report by exception
 3. Data interpreted and analysed in a meaningful way and results fed back into the system to form a closed loop in order to optimise and control it based on complete system influencing factors.
+
 Tools, Technologies, and Equipment:
 During the implementation of my project I propose to use the following:
-4. Arduino Uno control boards x 2
-5. Raspberry Pi with Sense Hat
-6. LCD display panel
-7. Thermocouple temperature sensors x 2
-8. 4 x PT100 temperature sensors using I2C communication
-9. Push buttons for control
-10. MQTT Publish and Subscribe
-11. http protocol for commands
-12. MySQL to store data
-13. Python and C++ coding for Raspberry Pi and Arduinos
+1. Arduino Uno control boards x 2
+2. Raspberry Pi with Sense Hat
+3. LCD display panel
+4. Thermocouple temperature sensors x 2
+5. 4 x PT100 temperature sensors using I2C communication
+6. Push buttons for control
+7. MQTT Publish and Subscribe
+8. http protocol for commands
+9. MySQL to store data
+10. Python and C++ coding for Raspberry Pi and Arduinos
