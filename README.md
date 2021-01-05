@@ -52,3 +52,7 @@ you tube combined overview video http://www.youtube.com/watch?v=F-mWeRQDeKE
 individual explaination videos also added
 
 sql dump file located in SQL folder
+
+Added Photos of system for context.docx with some pictures of the system for tontext.
+
+'Scrolling through LCD.mp4' Video added just to show scrolling through LCD display showing temperature values. Scrolling is via a pushbutton on the front of the control box I built.
