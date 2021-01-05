@@ -65,7 +65,7 @@ def sqlSave(valueName, valueReading, time_stamp):
 
         sqlRetrieve.data(mydb)
     except:
-        print("File Error on opening", time.ctime())
+        print("File Error on opening userdata.json file", time.ctime())
 
 
 try:
